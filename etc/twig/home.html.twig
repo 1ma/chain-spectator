@@ -87,7 +87,7 @@
             </thead>
             <tbody>
                 {% for block in blocks %}
-                <tr onclick="window.location='/block/{{ block.height }}'">
+                <tr onclick="window.location='/block/{{ block.hash }}'">
                     <td class="height mono">{{ block.height|number_format }}</td>
                     <td class="text-muted">{{ block.time_ago }}</td>
                     <td class="text-right mono">{{ block.tx_count|number_format }}</td>

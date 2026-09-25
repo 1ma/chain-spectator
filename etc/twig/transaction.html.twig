@@ -1,0 +1,344 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Transaction {{ tx.txid[:12] }}... - Chain Spectator{% endblock %}
+
+{% block head %}
+<style>
+    .tx-title {
+        margin-bottom: 1rem;
+    }
+    .tx-title h1 {
+        margin-bottom: 0.25rem;
+    }
+    .tx-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .txid-display {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.85rem;
+        word-break: break-all;
+    }
+    .conf-badge {
+        display: inline-block;
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .conf-confirmed {
+        background: var(--badge-green);
+        color: #fff;
+    }
+    .conf-unconfirmed {
+        background: var(--badge-yellow);
+        color: #1a1a2e;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+    .summary-grid .summary-col table { width: 100%; }
+    .summary-grid .summary-col td:first-child {
+        color: var(--text-muted);
+        width: 45%;
+        white-space: nowrap;
+    }
+    .fiat { color: var(--text-muted); font-size: 0.85rem; }
+
+    .feature-badge {
+        display: inline-block;
+        padding: 0.15rem 0.45rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(79, 195, 247, 0.15);
+        color: var(--accent);
+        margin-right: 0.25rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 1.5rem 0 0.75rem;
+    }
+    .section-header h2 { margin: 0; }
+    .toggle-btn {
+        background: none;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 0.3rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+
+    .io-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1.25rem;
+    }
+    .io-grid {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 1rem;
+        align-items: start;
+    }
+    .io-col h3 {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+    .io-arrow {
+        color: var(--text-muted);
+        padding-top: 2rem;
+        font-size: 1.4rem;
+    }
+    .io-entry {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .io-entry:last-child { border-bottom: none; }
+    .io-index {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    .io-addr {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.8rem;
+    }
+    .io-value {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.8rem;
+    }
+    .io-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+    .spent-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        background: rgba(255,255,255,0.05);
+        color: var(--text-muted);
+    }
+    .unspent-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        background: rgba(46, 125, 50, 0.2);
+        color: #66bb6a;
+    }
+
+    .io-totals {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.85rem;
+    }
+    .io-totals-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.15rem 0;
+    }
+    .io-totals-row .label { color: var(--text-muted); }
+    .io-totals-row .value { font-family: 'SF Mono', 'Fira Code', monospace; }
+
+    .details-section {
+        display: none;
+        margin-top: 1rem;
+    }
+    .details-section.open { display: block; }
+
+    @media (max-width: 768px) {
+        .summary-grid { grid-template-columns: 1fr; }
+        .io-grid { grid-template-columns: 1fr; }
+        .io-arrow { text-align: center; padding: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tx-title">
+    <h1>Transaction</h1>
+    <div class="tx-title-row">
+        <span class="txid-display">{{ tx.txid }}</span>
+        {% if tx.confirmed %}
+            <span class="conf-badge conf-confirmed">{{ tx.confirmations|number_format }} confirmations</span>
+        {% else %}
+            <span class="conf-badge conf-unconfirmed">Unconfirmed</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="summary-grid">
+        <div class="summary-col">
+            <table>
+                {% if tx.confirmed %}
+                <tr>
+                    <td>Timestamp</td>
+                    <td>{{ tx.timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Confirmed after</td>
+                    <td>{{ tx.confirmed_after }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td>First seen</td>
+                    <td>{{ tx.first_seen }}</td>
+                </tr>
+                <tr>
+                    <td>ETA</td>
+                    <td>{{ tx.eta }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>Features</td>
+                    <td>
+                        {% for feature in tx.features %}
+                            <span class="feature-badge">{{ feature }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="summary-col">
+            <table>
+                <tr>
+                    <td>Fee</td>
+                    <td class="mono">{{ tx.fee_sats|number_format }} sats <span class="fiat">{{ tx.fee_fiat }}</span></td>
+                </tr>
+                <tr>
+                    <td>Fee rate</td>
+                    <td class="mono">{{ tx.fee_rate }} sat/vB</td>
+                </tr>
+                <tr>
+                    <td>Effective fee rate</td>
+                    <td class="mono">{{ tx.effective_fee_rate }} sat/vB</td>
+                </tr>
+                {% if tx.confirmed %}
+                <tr>
+                    <td>Miner</td>
+                    <td>{{ tx.miner }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="section-header">
+    <h2>Inputs &amp; Outputs</h2>
+    <button class="toggle-btn" onclick="document.getElementById('tx-details').classList.toggle('open')">Details</button>
+</div>
+
+<div class="io-card">
+    <div class="io-grid">
+        <div class="io-col">
+            <h3>Inputs ({{ inputs|length }})</h3>
+            {% for input in inputs %}
+            <div class="io-entry">
+                <div class="io-index">#{{ input.index }}</div>
+                <div><a href="/address/{{ input.address }}" class="io-addr">{{ input.address[:6] }}...{{ input.address[-4:] }}</a></div>
+                <div class="io-value">{{ input.value }} BTC</div>
+                <div class="io-meta">from <a href="/tx/{{ input.prev_txid }}">{{ input.prev_txid[:8] }}...{{ input.prev_txid[-4:] }}</a>:{{ input.prev_vout }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="io-arrow">&rarr;</div>
+        <div class="io-col">
+            <h3>Outputs ({{ outputs|length }})</h3>
+            {% for output in outputs %}
+            <div class="io-entry">
+                <div class="io-index">#{{ output.index }}</div>
+                <div><a href="/address/{{ output.address }}" class="io-addr">{{ output.address[:6] }}...{{ output.address[-4:] }}</a></div>
+                <div class="io-value">{{ output.value }} BTC</div>
+                <div>
+                    {% if output.spent %}
+                        <span class="spent-badge">spent</span>
+                    {% else %}
+                        <span class="unspent-badge">unspent</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="io-totals">
+        <div class="io-totals-row">
+            <span class="label">Total input</span>
+            <span class="value">{{ tx.total_input_btc }} BTC</span>
+        </div>
+        <div class="io-totals-row">
+            <span class="label">Total output</span>
+            <span class="value">{{ tx.total_output_btc }} BTC</span>
+        </div>
+        <div class="io-totals-row">
+            <span class="label">Fee</span>
+            <span class="value">{{ tx.fee_btc }} BTC ({{ tx.fee_sats|number_format }} sats)</span>
+        </div>
+    </div>
+</div>
+
+<div id="tx-details" class="details-section">
+    <div class="card">
+        <div class="summary-grid">
+            <div class="summary-col">
+                <table>
+                    <tr>
+                        <td>Size</td>
+                        <td class="mono">{{ tx.size|number_format }} bytes</td>
+                    </tr>
+                    <tr>
+                        <td>Virtual size</td>
+                        <td class="mono">{{ tx.vsize|number_format }} vB</td>
+                    </tr>
+                    <tr>
+                        <td>Weight</td>
+                        <td class="mono">{{ tx.weight|number_format }} WU</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="summary-col">
+                <table>
+                    <tr>
+                        <td>Version</td>
+                        <td class="mono">{{ tx.version }}</td>
+                    </tr>
+                    <tr>
+                        <td>Locktime</td>
+                        <td class="mono">{{ tx.locktime|number_format }}</td>
+                    </tr>
+                    <tr>
+                        <td>Sigops</td>
+                        <td class="mono">{{ tx.sigops }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if tx.confirmed %}
+<p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+    Included in block <a href="/block/{{ tx.block_height }}">{{ tx.block_height|number_format }}</a>
+</p>
+{% endif %}
+{% endblock %}

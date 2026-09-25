@@ -1,0 +1,352 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Block {{ block.height }} - Chain Spectator{% endblock %}
+
+{% block head %}
+<style>
+    .block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    .block-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .block-nav a, .block-nav .disabled {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        font-size: 1.1rem;
+    }
+    .block-nav .disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+    .block-nav h1 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    .close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+    .summary-grid .summary-col table {
+        width: 100%;
+    }
+    .summary-grid .summary-col td:first-child {
+        color: var(--text-muted);
+        width: 40%;
+        white-space: nowrap;
+    }
+    .summary-grid .summary-col td:last-child {
+        word-break: break-all;
+    }
+    .fiat { color: var(--text-muted); font-size: 0.85rem; }
+
+    .details-toggle {
+        text-align: right;
+        margin: 0.75rem 0;
+    }
+    .details-toggle button {
+        background: none;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        padding: 0.3rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    .details-section {
+        display: none;
+    }
+    .details-section.open {
+        display: block;
+    }
+
+    .tx-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 1.5rem 0 0.75rem;
+    }
+    .tx-header h2 { margin: 0; }
+
+    .tx-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    .tx-card-header {
+        margin-bottom: 0.75rem;
+    }
+    .tx-card-header a {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.85rem;
+    }
+    .tx-io {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 0.5rem;
+        align-items: start;
+    }
+    .tx-io-col {
+        font-size: 0.85rem;
+    }
+    .tx-io-col h3 {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+    }
+    .tx-io-arrow {
+        color: var(--text-muted);
+        padding-top: 1.5rem;
+        font-size: 1.2rem;
+    }
+    .tx-io-entry {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.15rem 0;
+    }
+    .tx-io-entry .addr {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.8rem;
+    }
+    .tx-io-entry .amount {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .tx-fee {
+        text-align: right;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+    .coinbase-label {
+        color: var(--accent);
+        font-style: italic;
+        font-size: 0.8rem;
+    }
+    .op-return-label {
+        color: var(--text-muted);
+        font-style: italic;
+        font-size: 0.8rem;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+    }
+    .pagination a, .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2rem;
+        height: 2rem;
+        padding: 0 0.4rem;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        font-size: 0.8rem;
+    }
+    .pagination .active {
+        background: var(--accent);
+        color: var(--bg);
+        border-color: var(--accent);
+    }
+    .pagination .disabled {
+        opacity: 0.3;
+    }
+
+    @media (max-width: 768px) {
+        .summary-grid { grid-template-columns: 1fr; }
+        .tx-io { grid-template-columns: 1fr; }
+        .tx-io-arrow { text-align: center; padding: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="block-header">
+    <div class="block-nav">
+        <a href="/block/{{ block.prev_hash }}">&laquo;</a>
+        <h1>Block {{ block.height|number_format }}</h1>
+        <a href="/block/{{ block.next_hash }}">&raquo;</a>
+    </div>
+    <a href="/" class="close-btn">&times;</a>
+</div>
+
+<div class="card">
+    <div class="summary-grid">
+        <div class="summary-col">
+            <table>
+                <tr>
+                    <td>Hash</td>
+                    <td class="mono">{{ block.hash[:8] }}...{{ block.hash[-8:] }}</td>
+                </tr>
+                <tr>
+                    <td>Timestamp</td>
+                    <td>{{ block.timestamp }}</td>
+                </tr>
+                <tr>
+                    <td>Size</td>
+                    <td class="mono">{{ block.size|number_format }} bytes</td>
+                </tr>
+                <tr>
+                    <td>Weight</td>
+                    <td class="mono">{{ block.weight|number_format }} WU</td>
+                </tr>
+            </table>
+        </div>
+        <div class="summary-col">
+            <table>
+                <tr>
+                    <td>Fee span</td>
+                    <td class="mono">{{ block.fee_span_min }} - {{ block.fee_span_max }} sat/vB</td>
+                </tr>
+                <tr>
+                    <td>Median fee</td>
+                    <td class="mono">~{{ block.median_fee }} sat/vB <span class="fiat">{{ block.median_fee_fiat }}</span></td>
+                </tr>
+                <tr>
+                    <td>Total fees</td>
+                    <td class="mono">{{ block.total_fees_btc }} BTC <span class="fiat">{{ block.total_fees_fiat }}</span></td>
+                </tr>
+                <tr>
+                    <td>Subsidy + fees</td>
+                    <td class="mono">{{ block.reward_btc }} BTC <span class="fiat">{{ block.reward_fiat }}</span></td>
+                </tr>
+                <tr>
+                    <td>Miner</td>
+                    <td>{{ block.miner }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="details-toggle">
+    <button onclick="document.getElementById('block-details').classList.toggle('open')">Details</button>
+</div>
+
+<div id="block-details" class="details-section">
+    <div class="card">
+        <div class="summary-grid">
+            <div class="summary-col">
+                <table>
+                    <tr>
+                        <td>Version</td>
+                        <td class="mono">{{ block.version }}</td>
+                    </tr>
+                    <tr>
+                        <td>Bits</td>
+                        <td class="mono">{{ block.bits }}</td>
+                    </tr>
+                    <tr>
+                        <td>Merkle root</td>
+                        <td class="mono" style="word-break:break-all;">{{ block.merkle_root }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="summary-col">
+                <table>
+                    <tr>
+                        <td>Difficulty</td>
+                        <td class="mono">{{ block.difficulty }}</td>
+                    </tr>
+                    <tr>
+                        <td>Nonce</td>
+                        <td class="mono">{{ block.nonce }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tx-header">
+    <h2>{{ block.tx_count|number_format }} transactions</h2>
+</div>
+
+{% for tx in transactions %}
+<div class="tx-card">
+    <div class="tx-card-header">
+        <a href="/tx/{{ tx.txid }}">{{ tx.txid[:8] }}...{{ tx.txid[-8:] }}</a>
+    </div>
+    <div class="tx-io">
+        <div class="tx-io-col">
+            <h3>Inputs</h3>
+            {% for input in tx.inputs %}
+            <div class="tx-io-entry">
+                {% if input.coinbase is defined and input.coinbase %}
+                    <span class="coinbase-label">Coinbase</span>
+                {% else %}
+                    <a href="/address/{{ input.address }}" class="addr">{{ input.address[:6] }}...{{ input.address[-4:] }}</a>
+                    <span class="amount">{{ input.value }} BTC</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="tx-io-arrow">&rarr;</div>
+        <div class="tx-io-col">
+            <h3>Outputs</h3>
+            {% for output in tx.outputs %}
+            <div class="tx-io-entry">
+                {% if output.op_return is defined and output.op_return %}
+                    <span class="op-return-label">OP_RETURN</span>
+                {% else %}
+                    <a href="/address/{{ output.address }}" class="addr">{{ output.address[:6] }}...{{ output.address[-4:] }}</a>
+                    <span class="amount">{{ output.value }} BTC</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="tx-fee">
+        Fee: {{ tx.fee|number_format }} sats
+        {% if tx.fee_rate %}({{ tx.fee_rate }} sat/vB){% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<div class="pagination">
+    <span class="disabled">&laquo;</span>
+    {% for p in 1..5 %}
+        {% if p == page %}
+            <span class="active">{{ p }}</span>
+        {% else %}
+            <a href="/block/{{ block.hash }}?page={{ p }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+    <span>...</span>
+    <a href="/block/{{ block.hash }}?page={{ total_pages }}">{{ total_pages }}</a>
+    <a href="/block/{{ block.hash }}?page=2">&raquo;</a>
+</div>
+{% endblock %}

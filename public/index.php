@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use ChainSpectator\Action\BlockAction;
 use ChainSpectator\Action\HomeAction;
+use ChainSpectator\Action\TransactionAction;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
@@ -25,6 +27,14 @@ $builder->addDefinitions([
     HomeAction::class => function (ContainerInterface $c): HomeAction {
         return new HomeAction($c->get(Twig::class));
     },
+
+    BlockAction::class => function (ContainerInterface $c): BlockAction {
+        return new BlockAction($c->get(Twig::class));
+    },
+
+    TransactionAction::class => function (ContainerInterface $c): TransactionAction {
+        return new TransactionAction($c->get(Twig::class));
+    },
 ]);
 
 $container = $builder->build();
@@ -32,6 +42,8 @@ $container = $builder->build();
 $app = AppFactory::createFromContainer($container);
 
 $app->get('/', HomeAction::class);
+$app->get('/block/{blockhash}', BlockAction::class);
+$app->get('/tx/{txid}', TransactionAction::class);
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
