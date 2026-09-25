@@ -236,7 +236,7 @@
             {% for input in inputs %}
             <div class="io-entry">
                 <span class="io-index">#{{ input.index }}</span>
-                <a href="/address/{{ input.address }}" class="io-addr">{{ input.address[:10] }}...{{ input.address[-6:] }}</a>
+                <a href="/address/{{ input.address }}" class="io-addr">{{ input.address }}</a>
                 <span class="io-value">{{ input.value }} BTC</span>
                 <div class="io-source">
                     from <a href="/tx/{{ input.prev_txid }}">{{ input.prev_txid[:10] }}...{{ input.prev_txid[-4:] }}</a>:{{ input.prev_vout }}
@@ -250,7 +250,7 @@
             {% for output in outputs %}
             <div class="io-entry">
                 <span class="io-index">#{{ output.index }}</span>
-                <a href="/address/{{ output.address }}" class="io-addr">{{ output.address[:10] }}...{{ output.address[-6:] }}</a>
+                <a href="/address/{{ output.address }}" class="io-addr">{{ output.address }}</a>
                 <span class="io-value">{{ output.value }} BTC</span>
                 {% if output.spent %}
                     <span class="spent-tag spent">spent</span>

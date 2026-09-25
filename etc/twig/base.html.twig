@@ -199,7 +199,7 @@
     </style>
     {% block head %}{% endblock %}
 </head>
-<body>
+<body hx-boost="true">
     <nav class="navbar">
         <a href="/" class="navbar-brand">Chain Spectator</a>
         <form class="search-form" action="/search" method="get">
@@ -221,6 +221,7 @@
         Chain Spectator &middot; Powered by Bitcoin Knots + Fulcrum
     </footer>
 
+    <script src="/vendor/htmx-4.0.0.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

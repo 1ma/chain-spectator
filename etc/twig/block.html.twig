@@ -272,7 +272,7 @@
                 {% if input.coinbase is defined and input.coinbase %}
                     <span class="coinbase-label">Coinbase</span>
                 {% else %}
-                    <a href="/address/{{ input.address }}">{{ input.address[:8] }}...{{ input.address[-4:] }}</a>
+                    <a href="/address/{{ input.address }}">{{ input.address }}</a>
                     <span class="amount">{{ input.value }}</span>
                 {% endif %}
             </div>
@@ -286,7 +286,7 @@
                 {% if output.op_return is defined and output.op_return %}
                     <span class="op-return-label">OP_RETURN</span>
                 {% else %}
-                    <a href="/address/{{ output.address }}">{{ output.address[:8] }}...{{ output.address[-4:] }}</a>
+                    <a href="/address/{{ output.address }}">{{ output.address }}</a>
                     <span class="amount">{{ output.value }}</span>
                 {% endif %}
             </div>

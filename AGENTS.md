@@ -41,3 +41,4 @@ API: caldrà alguna font de preus històrics de Bitcoin.
 ### Frontend
 
 HTMX, sense JS ni passos de compilació a ser possible. Mantenir la filosofia HATEOAS al màxim possible.
+No fer servir CDNs per a assets estàtics (JS, fonts, CSS). Servir-los localment des de `public/vendor/`.

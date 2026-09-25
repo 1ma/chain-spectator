@@ -57,10 +57,9 @@
     .hero-search button:hover { background: var(--signal-hover); border-color: var(--signal-hover); }
 
     .blocks-table tr { cursor: pointer; }
-    .blocks-table .height {
+    .blocks-table .height a {
         font-family: 'Space Mono', monospace;
         font-weight: 700;
-        color: var(--signal);
         font-size: 0.85rem;
     }
     .blocks-table .data {
@@ -109,8 +108,8 @@
             </thead>
             <tbody>
                 {% for block in blocks %}
-                <tr onclick="window.location='/block/{{ block.hash }}'">
-                    <td class="height">{{ block.height|number_format }}</td>
+                <tr>
+                    <td class="height"><a href="/block/{{ block.hash }}">{{ block.height|number_format }}</a></td>
                     <td class="text-muted">{{ block.time_ago }}</td>
                     <td class="text-right data">{{ block.tx_count|number_format }}</td>
                     <td class="text-right data hide-mobile">{{ block.size_display }}</td>
