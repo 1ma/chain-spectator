@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Chain Spectator{% endblock %}</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-surface: #16213e;
+            --bg-card: #1c2a4a;
+            --bg-input: #0f1729;
+            --border: #2a3a5c;
+            --text: #e0e0e0;
+            --text-muted: #8892a4;
+            --text-heading: #f0f0f0;
+            --accent: #4fc3f7;
+            --accent-hover: #81d4fa;
+            --link: #4fc3f7;
+            --link-hover: #81d4fa;
+            --badge-green: #2e7d32;
+            --badge-yellow: #f9a825;
+            --table-stripe: rgba(255,255,255,0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        a {
+            color: var(--link);
+            text-decoration: none;
+        }
+        a:hover { color: var(--link-hover); }
+
+        .navbar {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .navbar-brand {
+            color: var(--text-heading);
+            font-weight: 700;
+            font-size: 1.1rem;
+            white-space: nowrap;
+        }
+
+        .search-form {
+            display: flex;
+            max-width: 480px;
+            flex: 1;
+        }
+
+        .search-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 1rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        tr:nth-child(even) td {
+            background: var(--table-stripe);
+        }
+        tr:hover td {
+            background: rgba(79, 195, 247, 0.05);
+        }
+
+        .text-right { text-align: right; }
+        .text-muted { color: var(--text-muted); }
+        .mono { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.875rem; }
+
+        h1 { font-size: 1.5rem; color: var(--text-heading); margin-bottom: 1rem; }
+        h2 { font-size: 1.2rem; color: var(--text-heading); margin-bottom: 0.75rem; }
+
+        @media (max-width: 768px) {
+            .hide-mobile { display: none; }
+            .navbar { flex-wrap: wrap; }
+            .search-form { order: 3; max-width: 100%; width: 100%; margin-top: 0.5rem; }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">Chain Spectator</a>
+        <form class="search-form" action="/search" method="get">
+            <input
+                type="text"
+                name="q"
+                class="search-input"
+                placeholder="Search by block hash, height, txid, or address..."
+                autocomplete="off"
+            >
+        </form>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        Chain Spectator &middot; Powered by Bitcoin Knots + Fulcrum
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

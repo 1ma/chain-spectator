@@ -1,0 +1,102 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Chain Spectator - Bitcoin Block Explorer{% endblock %}
+
+{% block head %}
+<style>
+    .hero {
+        text-align: center;
+        padding: 2rem 0 2.5rem;
+    }
+    .hero h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    .hero p {
+        color: var(--text-muted);
+        margin-bottom: 1.25rem;
+        font-size: 0.9rem;
+    }
+    .hero-search {
+        max-width: 560px;
+        margin: 0 auto;
+        display: flex;
+    }
+    .hero-search input {
+        flex: 1;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 4px 0 0 4px;
+        color: var(--text);
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+    }
+    .hero-search input::placeholder { color: var(--text-muted); }
+    .hero-search input:focus { outline: none; border-color: var(--accent); }
+    .hero-search button {
+        background: var(--accent);
+        color: var(--bg);
+        border: none;
+        border-radius: 0 4px 4px 0;
+        padding: 0.6rem 1.25rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .hero-search button:hover { background: var(--accent-hover); }
+
+    .blocks-table a {
+        display: contents;
+        color: inherit;
+    }
+    .blocks-table tr { cursor: pointer; }
+    .blocks-table .height {
+        color: var(--accent);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Search the chain</h1>
+    <p>Block hash &middot; height &middot; txid &middot; address</p>
+    <form class="hero-search" action="/search" method="get">
+        <input
+            type="text"
+            name="q"
+            placeholder="Enter block hash, height, txid, or address..."
+            autocomplete="off"
+            autofocus
+        >
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Latest Blocks</h2>
+    <div style="overflow-x: auto;">
+        <table class="blocks-table">
+            <thead>
+                <tr>
+                    <th>Height</th>
+                    <th>Time</th>
+                    <th class="text-right">Transactions</th>
+                    <th class="text-right hide-mobile">Size</th>
+                    <th>Miner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for block in blocks %}
+                <tr onclick="window.location='/block/{{ block.height }}'">
+                    <td class="height mono">{{ block.height|number_format }}</td>
+                    <td class="text-muted">{{ block.time_ago }}</td>
+                    <td class="text-right mono">{{ block.tx_count|number_format }}</td>
+                    <td class="text-right mono hide-mobile">{{ block.size_display }}</td>
+                    <td>{{ block.miner }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
