@@ -1,0 +1,42 @@
+{% for tx in transactions %}
+<div class="tx-card">
+    <div class="tx-card-head">
+        <div class="tx-card-id">
+            <a href="/tx/{{ tx.txid }}">{{ tx.txid[:10] }}...{{ tx.txid[-6:] }}</a>
+        </div>
+        <div class="tx-card-time">{{ tx.timestamp }}</div>
+    </div>
+    <div class="tx-io">
+        <div>
+            <div class="tx-io-col-label">Inputs</div>
+            {% for input in tx.inputs %}
+            <div class="tx-io-entry">
+                {% if input.address == address.addr %}
+                    <a href="/address/{{ input.address }}" class="own-addr">{{ input.address }}</a>
+                {% else %}
+                    <a href="/address/{{ input.address }}">{{ input.address }}</a>
+                {% endif %}
+                <span class="amount">{{ input.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="tx-io-arrow">&rarr;</div>
+        <div>
+            <div class="tx-io-col-label">Outputs</div>
+            {% for output in tx.outputs %}
+            <div class="tx-io-entry">
+                {% if output.address == address.addr %}
+                    <a href="/address/{{ output.address }}" class="own-addr">{{ output.address }}</a>
+                {% else %}
+                    <a href="/address/{{ output.address }}">{{ output.address }}</a>
+                {% endif %}
+                <span class="amount">{{ output.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="tx-fee">
+        {{ tx.fee|number_format }} sats{% if tx.fee_rate %} &middot; {{ tx.fee_rate }} sat/vB{% endif %}
+    </div>
+</div>
+{% endfor %}

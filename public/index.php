@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use ChainSpectator\Action\AddressAction;
+use ChainSpectator\Action\AddressTxsAction;
 use ChainSpectator\Action\BlockAction;
 use ChainSpectator\Action\HomeAction;
 use ChainSpectator\Action\TransactionAction;
@@ -35,6 +37,14 @@ $builder->addDefinitions([
     TransactionAction::class => function (ContainerInterface $c): TransactionAction {
         return new TransactionAction($c->get(Twig::class));
     },
+
+    AddressAction::class => function (ContainerInterface $c): AddressAction {
+        return new AddressAction($c->get(Twig::class));
+    },
+
+    AddressTxsAction::class => function (ContainerInterface $c): AddressTxsAction {
+        return new AddressTxsAction($c->get(Twig::class));
+    },
 ]);
 
 $container = $builder->build();
@@ -44,6 +54,8 @@ $app = AppFactory::createFromContainer($container);
 $app->get('/', HomeAction::class);
 $app->get('/block/{blockhash}', BlockAction::class);
 $app->get('/tx/{txid}', TransactionAction::class);
+$app->get('/address/{addr}', AddressAction::class);
+$app->get('/address/{addr}/txs', AddressTxsAction::class);
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);

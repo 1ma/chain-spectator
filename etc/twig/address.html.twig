@@ -1,0 +1,234 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Address {{ address.addr[:16] }}... - Chain Spectator{% endblock %}
+
+{% block head %}
+<style>
+    .addr-header {
+        margin-bottom: 1.25rem;
+    }
+    .addr-label {
+        font-size: 0.8rem;
+        color: var(--iron);
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    .addr-string {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.8rem;
+        word-break: break-all;
+        line-height: 1.5;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 2rem;
+    }
+
+    .tx-count-bar {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin: 1.75rem 0 0.75rem;
+    }
+    .tx-count-bar h2 { margin: 0; }
+
+    .tx-card {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.6rem;
+    }
+    .tx-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.65rem;
+    }
+    .tx-card-id {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.8rem;
+    }
+    .tx-card-time {
+        font-size: 0.75rem;
+        color: var(--iron);
+        white-space: nowrap;
+    }
+
+    .tx-io {
+        display: grid;
+        grid-template-columns: 1fr 1.5rem 1fr;
+        gap: 0;
+        align-items: start;
+    }
+    .tx-io-col-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--iron);
+        margin-bottom: 0.35rem;
+    }
+    .tx-io-arrow {
+        color: var(--rule);
+        text-align: center;
+        padding-top: 1.2rem;
+        font-size: 1rem;
+    }
+    .tx-io-entry {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.2rem 0;
+        font-size: 0.8rem;
+    }
+    .tx-io-entry a {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.75rem;
+    }
+    .tx-io-entry .amount {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        color: var(--ink);
+    }
+    .tx-io-entry .own-addr {
+        color: var(--signal);
+        font-weight: 700;
+    }
+
+    .tx-fee {
+        text-align: right;
+        color: var(--iron);
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+        padding-top: 0.4rem;
+        border-top: 1px solid var(--rule);
+    }
+
+    .load-more {
+        text-align: center;
+        margin: 1.25rem 0;
+    }
+    .load-more-btn {
+        background: none;
+        border: 1px solid var(--rule);
+        color: var(--iron);
+        padding: 0.5rem 1.5rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .load-more-btn:hover { border-color: var(--signal); color: var(--signal); }
+
+    @media (max-width: 640px) {
+        .summary-grid { grid-template-columns: 1fr; }
+        .tx-io { grid-template-columns: 1fr; }
+        .tx-io-arrow { padding: 0.25rem 0; }
+        .tx-card-head { flex-wrap: wrap; gap: 0.25rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="addr-header">
+    <div class="addr-label">Address</div>
+    <div class="addr-string">{{ address.addr }}</div>
+</div>
+
+<div class="card">
+    <div class="summary-grid">
+        <table class="summary-table">
+            <tr>
+                <td>Confirmed balance</td>
+                <td class="mono">{{ address.confirmed_balance }} BTC <span class="fiat">{{ address.confirmed_fiat }}</span></td>
+            </tr>
+            <tr>
+                <td>Confirmed UTXOs</td>
+                <td class="mono">{{ address.confirmed_utxos }}</td>
+            </tr>
+            <tr>
+                <td>Total received</td>
+                <td class="mono">{{ address.total_received }} BTC <span class="fiat">{{ address.total_received_fiat }}</span></td>
+            </tr>
+        </table>
+        <table class="summary-table">
+            <tr>
+                <td>Pending</td>
+                <td class="mono">{{ address.pending_balance }} BTC <span class="fiat">{{ address.pending_fiat }}</span></td>
+            </tr>
+            <tr>
+                <td>Pending UTXOs</td>
+                <td class="mono">+{{ address.pending_utxos }}</td>
+            </tr>
+            <tr>
+                <td>Type</td>
+                <td>{{ address.type }}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="tx-count-bar">
+    <h2>{{ shown }} of {{ address.tx_count|number_format }} transactions</h2>
+</div>
+
+<div id="address-txs">
+{% for tx in transactions %}
+<div class="tx-card">
+    <div class="tx-card-head">
+        <div class="tx-card-id">
+            <a href="/tx/{{ tx.txid }}">{{ tx.txid[:10] }}...{{ tx.txid[-6:] }}</a>
+        </div>
+        <div class="tx-card-time">{{ tx.timestamp }}</div>
+    </div>
+    <div class="tx-io">
+        <div>
+            <div class="tx-io-col-label">Inputs</div>
+            {% for input in tx.inputs %}
+            <div class="tx-io-entry">
+                {% if input.address == address.addr %}
+                    <a href="/address/{{ input.address }}" class="own-addr">{{ input.address }}</a>
+                {% else %}
+                    <a href="/address/{{ input.address }}">{{ input.address }}</a>
+                {% endif %}
+                <span class="amount">{{ input.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="tx-io-arrow">&rarr;</div>
+        <div>
+            <div class="tx-io-col-label">Outputs</div>
+            {% for output in tx.outputs %}
+            <div class="tx-io-entry">
+                {% if output.address == address.addr %}
+                    <a href="/address/{{ output.address }}" class="own-addr">{{ output.address }}</a>
+                {% else %}
+                    <a href="/address/{{ output.address }}">{{ output.address }}</a>
+                {% endif %}
+                <span class="amount">{{ output.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="tx-fee">
+        {{ tx.fee|number_format }} sats{% if tx.fee_rate %} &middot; {{ tx.fee_rate }} sat/vB{% endif %}
+    </div>
+</div>
+{% endfor %}
+</div>
+
+{% if shown < address.tx_count %}
+<div class="load-more">
+    <button
+        class="load-more-btn"
+        hx-get="/address/{{ address.addr }}/txs?after={{ transactions|last.txid }}"
+        hx-target="#address-txs"
+        hx-swap="beforeend"
+    >Load more transactions</button>
+</div>
+{% endif %}
+{% endblock %}
