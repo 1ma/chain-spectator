@@ -225,7 +225,7 @@
 <div class="load-more">
     <button
         class="load-more-btn"
-        hx-get="/address/{{ address.addr }}/txs?after={{ transactions|last.txid }}"
+        hx-get="/_hx/address/{{ address.addr }}/txs?after={{ transactions|last.txid }}"
         hx-target="#address-txs"
         hx-swap="beforeend"
     >Load more transactions</button>

@@ -7,9 +7,11 @@ use ChainSpectator\Action\AddressTxsAction;
 use ChainSpectator\Action\BlockAction;
 use ChainSpectator\Action\HomeAction;
 use ChainSpectator\Action\TransactionAction;
+use ChainSpectator\Middleware\HxHeaderRedirect;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
+use Slim\Routing\RouteCollectorProxy;
 use Slim\Views\Twig;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -55,7 +57,11 @@ $app->get('/', HomeAction::class);
 $app->get('/block/{blockhash}', BlockAction::class);
 $app->get('/tx/{txid}', TransactionAction::class);
 $app->get('/address/{addr}', AddressAction::class);
-$app->get('/address/{addr}/txs', AddressTxsAction::class);
+
+$app->group('/_hx', function (RouteCollectorProxy $_hx) {
+    $_hx->get('/address/{addr}/txs', AddressTxsAction::class);
+})
+    ->add(HxHeaderRedirect::class);
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
