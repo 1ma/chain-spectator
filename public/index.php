@@ -9,44 +9,22 @@ use ChainSpectator\Action\HomeAction;
 use ChainSpectator\Action\TransactionAction;
 use ChainSpectator\Middleware\HxHeaderRedirect;
 use DI\ContainerBuilder;
-use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use Slim\Views\Twig;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$builder = new ContainerBuilder();
-$builder
+$builder = new ContainerBuilder()
     ->useAttributes(false)
-    ->useAutowiring(false);
+    ->useAutowiring(true);
 
 $builder->addDefinitions([
     Twig::class => function (): Twig {
         return Twig::create(__ROOT__ . '/etc/twig', [
             'cache' => false,
         ]);
-    },
-
-    HomeAction::class => function (ContainerInterface $c): HomeAction {
-        return new HomeAction($c->get(Twig::class));
-    },
-
-    BlockAction::class => function (ContainerInterface $c): BlockAction {
-        return new BlockAction($c->get(Twig::class));
-    },
-
-    TransactionAction::class => function (ContainerInterface $c): TransactionAction {
-        return new TransactionAction($c->get(Twig::class));
-    },
-
-    AddressAction::class => function (ContainerInterface $c): AddressAction {
-        return new AddressAction($c->get(Twig::class));
-    },
-
-    AddressTxsAction::class => function (ContainerInterface $c): AddressTxsAction {
-        return new AddressTxsAction($c->get(Twig::class));
-    },
+    }
 ]);
 
 $container = $builder->build();
