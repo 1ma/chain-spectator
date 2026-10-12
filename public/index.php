@@ -27,9 +27,7 @@ $builder->addDefinitions([
     }
 ]);
 
-$container = $builder->build();
-
-$app = AppFactory::createFromContainer($container);
+$app = AppFactory::createFromContainer($builder->build());
 
 $app->get('/', HomeAction::class);
 $app->get('/block/{blockhash}', BlockAction::class);
